@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ConsoleEX\ConsoleEX.csproj" />
+    <ProjectReference Include="..\ConsoleEX\AvalonTM.ConsoleEX.csproj" />
   </ItemGroup>
 
 </Project>
