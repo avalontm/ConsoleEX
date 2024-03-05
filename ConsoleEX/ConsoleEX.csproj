@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	  <Title>ConsoleEX</Title>
+	  <Copyright>AvalonTM</Copyright>
+	  <Authors>AvalonTM</Authors>
+	  <PackageProjectUrl>https://github.com/avalontm/ConsoleEX</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/avalontm/APIClient</RepositoryUrl>
+	  <RepositoryType>git</RepositoryType>
+	  <PackageTags>Console Extended, Crossplatform</PackageTags>
+	  <Description>Simple Plugin Console Extended for beginners</Description>
+	  <PackageIcon>terminal.png</PackageIcon>
+	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
+	  <FileVersion>1.0.0.0</FileVersion>
+	  <PackageVersion>1.0.0</PackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="terminal.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
