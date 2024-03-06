@@ -13,9 +13,9 @@
 	  <PackageTags>Console Extended, Crossplatform</PackageTags>
 	  <Description>Simple Plugin Console Extended for beginners</Description>
 	  <PackageIcon>terminal.png</PackageIcon>
-	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
-	  <FileVersion>1.0.0.0</FileVersion>
-	  <PackageVersion>1.0.0</PackageVersion>
+	  <AssemblyVersion>1.0.0.1</AssemblyVersion>
+	  <FileVersion>1.0.0.1</FileVersion>
+	  <PackageVersion>1.0.1</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
