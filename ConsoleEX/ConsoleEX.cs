@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 
 namespace ConsoleEX
 {
@@ -68,6 +69,7 @@ namespace ConsoleEX
         /// <returns></returns>
         public static async Task WaitStart(string message = "Espere", int sequence = 5)
         {
+#pragma warning disable CS4014 // Dado que no se esperaba esta llamada, la ejecución del método actual continuará antes de que se complete la llamada
             Task.Run(() =>
             {
                 isWait = true;
@@ -80,16 +82,17 @@ namespace ConsoleEX
 
                 spinner.End();
             });
+#pragma warning restore CS4014 // Dado que no se esperaba esta llamada, la ejecución del método actual continuará antes de que se complete la llamada
 
             await Task.Delay(1000);
         }
 
-        /*
+
         /// <summary>
         /// Crea una tabla en base al modelo d lista
         /// </summary>
         /// <param name="datos"></param>
-        public static void CreateTable(List<CObject> datos)
+        public static void CreateTable(List<ConsoleTableItem> datos, ConsoleColor title_color = ConsoleColor.Yellow, ConsoleColor PrimaryColor = ConsoleColor.White, ConsoleColor SecundaryColor = ConsoleColor.Gray)
         {
             if (datos == null || datos.Count == 0)
             {
@@ -97,117 +100,117 @@ namespace ConsoleEX
                 return;
             }
 
+            const int maxTableWidth = 100; // Limitar ancho total de la tabla
+
             Console.WriteLine();
 
-            List<string> headers = new List<string>();
-            List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
+            // Encontrar el título más largo
+            int maxTitleLength = datos.Max(item => item.Title.Length) + 4;
 
-            CObject cob = new CObject();
-            Type tipo = cob.GetType();
+            // Definimos la altura de la tabla
+            int maxHeight = datos.Max(item => item.Items.Count);
 
-            //Obtengemos las llaves
-            PropertyInfo[] properties = tipo.GetProperties(BindingFlags.Public);
+            // Creamos una matriz para almacenar los items formateados y centrados
+            string[,] formattedItems = new string[maxHeight, datos.Count];
 
-            foreach (PropertyInfo key in properties)
+            // Calcular ancho máximo de las columnas de items
+            int[] columnWidths = new int[datos.Count];
+            int maxColumnIndex = -1;
+            int maxColumnWidth = 0;
+
+            for (int col = 0; col < datos.Count; col++)
             {
-                headers.Add(key.Name);
-            }
+                int maxWidth = 0;
 
-            foreach (CObject dato in datos)
-            {
-                List<Dictionary<string, object>> list = new();
-
-                foreach (var value in dato)
+                for (int row = 0; row < maxHeight; row++)
                 {
-                    list.Add(value.Value);
-                }
-
-                items.Add(list);
-            }
-
-            // Calcular el ancho máximo para cada columna.
-            int[] columnWidths = new int[headers.Count];
-
-            for (int i = 0; i < headers.Count; i++)
-            {
-                // Initialize maximum width for current column
-                int maxWidth = headers[i].Length + 4; // Consider header length and minimum separation
-
-                // Loop through each item in the first row (assuming consistent data length)
-                for (int j = 0; j < items[0].Count; j++)
-                {
-                    // Check if current item length exceeds current maximum width
-                    if (items[0][i].ToString().Length > maxWidth)
+                    if (row < datos[col].Items.Count)
                     {
-                        // Update maximum width if necessary
-                        maxWidth = items[0][i].ToString().Length + 4;
+                        object item = datos[col].Items[row];
+                        string formattedItem = FormatItem(item); // Función para formateo condicional
+                        formattedItem = formattedItem.PadRight(formattedItem.Length + 2); // Añadimos padding
+                        formattedItems[row, col] = formattedItem;
+                        maxWidth = Math.Max(maxWidth, formattedItem.Length);
                     }
                 }
 
-                // Update column width with the calculated maximum width
-                columnWidths[i] = maxWidth;
-            }
+                columnWidths[col] = Math.Min(maxWidth, maxTableWidth / datos.Count); // Limitar ancho de columna
 
-            for (int i = 0; i < headers.Count; i++)
-            {
-                // Calculate minimum padding length for guaranteed separation
-                int minPadding = 2; // Ensure at least 2 spaces on each side (4 spaces total)
-
-                // Calculate padding length for centered text
-                int paddingLength = ((columnWidths[i] - headers[i].Length) / 2) + 1;
-
-                // Choose the larger padding length for centering and separation
-                paddingLength = Math.Max(paddingLength, minPadding);
-
-                // Use string formatting for flexible centering
-                string centeredHeader = headers[i].PadLeft(paddingLength).PadRight(columnWidths[i]);
-
-                Console.Write(centeredHeader);
-            }
-
-            Console.WriteLine();
-
-            // Línea de separación
-            for (int i = 0; i < headers.Count; i++)
-            {
-                Console.Write(new string('-', columnWidths[i]));
-            }
-
-            Console.WriteLine();
-
-            // Filas de datos
-            for (int i = 0; i < datos.Count; i++)
-            {
-                for (int j = 0; j < headers.Count; j++)
+                if (maxWidth > maxColumnWidth)
                 {
-                    Dictionary<string,object> token = items[i][j];
-
-                    string value = token.ToString();
-
-                    if (token.Type == JTokenType.Boolean)
-                    {
-                        if (token.Value<bool>())
-                        {
-                            value = "SI";
-                        }
-                        else
-                        {
-                            value = "NO";
-                        }
-                    }
-
-                    Console.Write(value.PadRight(columnWidths[j] + 2));
+                    maxColumnWidth = maxWidth;
+                    maxColumnIndex = col;
                 }
+            }
 
+            // Imprimir la línea de separación
+            Console.WriteLine(new string('-', Console.WindowWidth));
+
+            Console.ForegroundColor = title_color;
+            // Imprimir encabezados de columna
+            Console.WriteLine(string.Join(" ", datos.Select(item => item.Title.PadLeft((columnWidths[maxColumnIndex] - (item.Title.Length / 2))-1).PadRight(Math.Max(columnWidths[maxColumnIndex] -1, (item.Title.Length/2) )+1))));
+            Console.ResetColor();
+
+            // Imprimir la línea de separación
+            Console.WriteLine(new string('-', Console.WindowWidth));
+
+            // Contador para alternar colores
+            int colorCounter = 0;
+
+            // Imprimir el título y items
+            for (int row = 0; row < maxHeight; row++)
+            {
+                Console.ForegroundColor = (ConsoleColor)(colorCounter % 2 == 0 ? PrimaryColor : SecundaryColor); // Alternar colores
+
+                for (int col = 0; col < datos.Count; col++)
+                {
+                    // Calcular padding para centrar el título
+                    int paddingLength = (maxTitleLength - datos[col].Title.Length) / 2;
+
+                    // Imprimir item formateado o espacio en blanco
+                    if (row < datos[col].Items.Count)
+                    {
+                        Console.Write(formattedItems[row, col].PadLeft((columnWidths[maxColumnIndex] - (formattedItems[row, col].Length / 2))).PadRight(Math.Max(columnWidths[maxColumnIndex]-1, (formattedItems[row, col].Length/2) )+2)); // Añadir padding de 2 espacios 
+                    }
+                    else
+                    {
+                        Console.Write(new string(' ', columnWidths[maxColumnIndex]));
+                    }
+                }
+                Console.ResetColor(); // Restablecer color después de la fila
                 Console.WriteLine();
+                colorCounter++; // Incrementar contador para alternar colores
             }
 
-            headers.Clear();
-            items.Clear();
+            Console.ResetColor(); // Restablecer color después de la fila
+
+            // Imprimir la línea de separación
+            Console.WriteLine(new string('-', Console.WindowWidth));
             Console.WriteLine();
+
         }
 
-*/
+        // Función para formatear condicionalmente los items
+        static string FormatItem(object item)
+        {
+            if (item is string)
+            {
+                return item.ToString();
+            }
+            else if (item is DateTime)
+            {
+                return ((DateTime)item).ToString("dd/MM/yyyy");
+            }
+            else if (item is decimal)
+            {
+                return ((decimal)item).ToString("N2");
+            }
+            else
+            {
+                return item.ToString();
+            }
+        }
+
         /// <summary>
         /// Establece un menu en consola
         /// </summary>
